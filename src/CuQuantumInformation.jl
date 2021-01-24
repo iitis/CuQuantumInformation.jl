@@ -1,4 +1,5 @@
 module CuQuantumInformation
+using DocStringExtensions
 using QuantumInformation
 eval(Expr(:export, names(QuantumInformation)...))
 
