@@ -1,4 +1,4 @@
-using Documenter, MatrixEnsembles
+using Documenter, CuQuantumInformation
 
 format = Documenter.HTML(edit_link = "master",
                          prettyurls = get(ENV, "CI", nothing) == "true",
