@@ -1,4 +1,3 @@
-CUDA.allowscalar(false)
 @testset "Utility functions" begin
 
 ρ = [0.25 0.25im; -0.25im 0.75]
