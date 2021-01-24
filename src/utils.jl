@@ -1,11 +1,18 @@
-renormalize!(x::CuVector) = (x = x ./ CuArrays.norm(x))
-renormalize!(x::CuMatrix) = (x = x ./ CuArrays.tr(x))
-# this works only for positive matrices!!
-# invsqrt
+export invsqrt, invsqrt!, cudiv
+
+@inline function cudiv(x::Int)
+    max_threads = 256
+    threads_x = min(max_threads, x)
+    threads_x, ceil(Int, x/threads_x)
+end
+
+renormalize!(x::CuVector) = (x[:] = x ./ norm(x))
+renormalize!(x::CuMatrix) = (x[:] = x ./ tr(x))
+
 function invsqrt!(x::CuMatrix)
-    F = CuArrays.svd!(x)
+    F = CUDA.svd(x)
     S = 1 ./ sqrt.(F.S)
-    (CuArrays.transpose(S) .* F.U) * F.U'
+    x[:] = (transpose(S) .* F.U) * F.U'
 end
 
 function invsqrt(x::CuMatrix)
@@ -13,20 +20,21 @@ function invsqrt(x::CuMatrix)
     invsqrt!(y)
 end
 
-# kron for CuArrays
-function kron(a::CuMatrix{T1}, b::CuMatrix{T2}) where {T1<:Number, T2<:Number}
-    dims = map(prod, zip(size(a), size(b)))
+function LinearAlgebra.kron(A::CuArray{T1}, B::CuArray{T2}) where {T1<:Number, T2<:Number}
     T = promote_type(T1, T2)
-    c = CuMatrix{T}(undef, dims...)
-    gpu_call(c, (c, a, b)) do state, c, a, b
-        (i, j) = @cartesianidx c
-        (p, q) = size(b)
-        k = (i - 1) ÷ p + 1
-        l = (j - 1) ÷ q + 1
-        m = i - ((i - 1) ÷ p) * p
-        n = j - ((j - 1) ÷ q) * q
-        @inbounds c[i, j] = a[k, l] * b[m, n]
+    ret = CUDA.zeros(T, (size(A) .* size(B))...)
+    CI = CartesianIndices(ret)
+    @inline function kernel(ret, A, B)
+        state = (blockIdx().x-1) * blockDim().x + threadIdx().x
+        if state <= length(ret)
+            @inbounds idx = CI[state].I .- 1
+            idx_A = idx .÷ size(B) .+ 1
+            idx_B = idx .% size(B) .+ 1
+            @inbounds ret[state] = A[idx_A...] * B[idx_B...]
+        end
         return
     end
-    return c
+    threads, blocks = cudiv(length(ret))
+    @cuda threads=threads blocks=blocks kernel(ret, A, B)
+    return ret
 end

@@ -6,10 +6,9 @@ using CUDA
 using LinearAlgebra
 using DocStringExtensions
 
-const ⊗ = kron
+export curand
 
-export ⊗, curand
-
+CUDA.allowscalar(false)
 include("utils.jl")
 include("randomqobjects.jl")
 end # module
