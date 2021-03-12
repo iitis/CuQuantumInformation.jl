@@ -4,15 +4,16 @@ authors = ["Łukasz Pawela <lukasz.pawela@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MatrixEnsembles = "c7015dd7-3fb7-4a4c-827e-526313618491"
 QuantumInformation = "3c0b384b-479c-5684-b2ef-9d7a46dd931e"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+TensorOperations = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
 
 [compat]
-CUDA = "2.5"
 DocStringExtensions = "0.8.3"
 MatrixEnsembles = "0.1"
 QuantumInformation = "0.4"
